@@ -1,0 +1,67 @@
+# unitree_rl_mjlab deploy config for task Velocity-Flat-Deploy-Unitree-Go2.
+# Copy this folder to unitree_rl_mjlab/deploy/robots/go2/config/policy/velocity/v1/
+# and put the exported ONNX at v1/exported/policy.onnx.
+#
+# Everything here must match training (see the ONNX metadata):
+#   joint order FR, FL, RR, RL == Unitree SDK motor order -> identity joint_ids_map
+#   observation order == actor term order in training (the ONNX input "obs", 45 dims)
+
+joint_ids_map: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+step_dt: 0.02  # sim timestep 0.005 * decimation 4
+stiffness: [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
+damping: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+default_joint_pos: [0.0, 0.9, -1.8, 0.0, 0.9, -1.8, 0.0, 0.9, -1.8, 0.0, 0.9, -1.8]
+
+# Joystick sticks are in [-1, 1]; values are clamped to these ranges.
+# Conservative for first hardware tests; training went up to x in [-1.5, 2.0], yaw in [-0.7, 0.7].
+commands:
+  base_velocity:
+    ranges:
+      lin_vel_x: [-0.5, 1.0]
+      lin_vel_y: [-0.5, 0.5]
+      ang_vel_z: [-0.7, 0.7]
+      heading: null
+
+actions:
+  JointPositionAction:
+    clip: null
+    joint_names: [.*]
+    # 0.25 * effort_limit / stiffness (hip/thigh 23.7 Nm, calf 45.43 Nm)
+    scale: [0.1692857, 0.1692857, 0.3245, 0.1692857, 0.1692857, 0.3245,
+            0.1692857, 0.1692857, 0.3245, 0.1692857, 0.1692857, 0.3245]
+    offset: [0.0, 0.9, -1.8, 0.0, 0.9, -1.8, 0.0, 0.9, -1.8, 0.0, 0.9, -1.8]
+    joint_ids: null
+
+# Order matters: must match training actor order
+# base_ang_vel, projected_gravity, joint_pos, joint_vel, actions, command.
+observations:
+  base_ang_vel:
+    params: {}
+    clip: null
+    scale: [1.0, 1.0, 1.0]
+    history_length: 1
+  projected_gravity:
+    params: {}
+    clip: null
+    scale: [1.0, 1.0, 1.0]
+    history_length: 1
+  joint_pos_rel:
+    params: {}
+    clip: null
+    scale: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    history_length: 1
+  joint_vel_rel:
+    params: {}
+    clip: null
+    scale: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    history_length: 1
+  last_action:
+    params: {}
+    clip: null
+    scale: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    history_length: 1
+  velocity_commands:
+    params: {command_name: base_velocity}
+    clip: null
+    scale: [1.0, 1.0, 1.0]
+    history_length: 1
