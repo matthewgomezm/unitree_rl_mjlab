@@ -34,6 +34,8 @@ public:
         if(!cfg["clip"].IsNull()) {
             _clip = cfg["clip"].as<std::vector<std::vector<float> >>();
         }
+        // Start at the offset (default pose) rather than 0 rad, so targets are safe before the first policy step.
+        process_actions(_raw_actions);
     }
 
     virtual void process_actions(std::vector<float> actions)
@@ -78,6 +80,7 @@ public:
     void reset()
     {
         _raw_actions.assign(_action_dim, 0.0f);
+        process_actions(_raw_actions);
     }
 
 protected:

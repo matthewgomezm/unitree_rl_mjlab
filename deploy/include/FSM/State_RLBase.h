@@ -23,7 +23,8 @@ public:
             lowcmd->msg_.motor_cmd()[i].tau() = 0;
         }
 
-        env->robot->update();
+        // Reset before run() can read actions, so the first targets are the default pose.
+        env->reset();
         // Start policy thread
         policy_thread_running = true;
         policy_thread = std::thread([this]{
@@ -33,7 +34,6 @@ public:
 
             // Initialize timing
             auto sleepTill = clock::now() + dt;
-            env->reset();
 
             while (policy_thread_running)
             {
