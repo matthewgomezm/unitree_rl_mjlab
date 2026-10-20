@@ -150,5 +150,34 @@ REGISTER_OBSERVATION(gait_phase)
     return obs;
 }
 
+REGISTER_OBSERVATION(depth)
+{
+    const int width = params["width"].as<int>(64);
+    const int height = params["height"].as<int>(36);
+    const float cutoff = params["cutoff_distance"].as<float>(9.0f);
+    const float min_depth = params["min_depth"].as<float>(0.1f);
+
+    std::vector<float> obs(width * height, 1.0f);
+    if(!env->camera) {
+        return obs;
+    }
+
+    const auto depth = env->camera->get_latest_depth();
+    if(depth.size() != obs.size()) {
+        return obs;
+    }
+
+    for(size_t i = 0; i < obs.size(); ++i)
+    {
+        const float d = depth[i];
+        if(!std::isfinite(d) || d <= 0.0f) {
+            obs[i] = 1.0f;
+            continue;
+        }
+        obs[i] = std::clamp(d, min_depth, cutoff) / cutoff;
+    }
+    return obs;
+}
+
 }
 }

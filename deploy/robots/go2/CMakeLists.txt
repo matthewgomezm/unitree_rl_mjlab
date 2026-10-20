@@ -1,8 +1,19 @@
 cmake_minimum_required(VERSION 3.12)
 project(go2_controller)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 find_package(yaml-cpp REQUIRED)
+
+find_package(realsense2 QUIET)
+if(realsense2_FOUND)
+  message(STATUS "librealsense2 ${realsense2_VERSION} found: RealSense camera enabled")
+  add_compile_definitions(USE_REALSENSE)
+  link_libraries(realsense2::realsense2)
+else()
+  message(STATUS "librealsense2 not found: RealSense camera disabled")
+endif()
 
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
     set(ONNXRUNTIME_DIR "${PROJECT_SOURCE_DIR}/../../thirdparty/onnxruntime-linux-x64-1.22.0")

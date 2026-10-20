@@ -11,6 +11,7 @@
 #include "isaaclab/algorithms/algorithms.h"
 #include <iostream>
 #include "isaaclab/utils/utils.h"
+#include "depth_camera.h"
 
 namespace isaaclab
 {
@@ -22,8 +23,9 @@ class ManagerBasedRLEnv
 {
 public:
     // Constructor
-    ManagerBasedRLEnv(YAML::Node cfg, std::shared_ptr<Articulation> robot_)
-    :cfg(cfg), robot(std::move(robot_))
+    ManagerBasedRLEnv(YAML::Node cfg, std::shared_ptr<Articulation> robot_,
+                      std::shared_ptr<DepthCamera> camera_ = nullptr)
+    :cfg(cfg), robot(std::move(robot_)), camera(std::move(camera_))
     {
         // Parse configuration
         this->step_dt = cfg["step_dt"].as<float>();
@@ -72,6 +74,7 @@ public:
     std::unique_ptr<ObservationManager> observation_manager;
     std::unique_ptr<ActionManager> action_manager;
     std::shared_ptr<Articulation> robot;
+    std::shared_ptr<DepthCamera> camera;  // nullptr if no camera
     std::unique_ptr<Algorithms> alg;
     long episode_length = 0;
     float global_phase = 0.0f;
